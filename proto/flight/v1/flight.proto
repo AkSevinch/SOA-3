@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package flight.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "soa3/gen/go/flight/v1;flightv1";
+
+// Статус рейса
+enum FlightStatus {
+  FLIGHT_STATUS_UNSPECIFIED = 0;
+  FLIGHT_STATUS_SCHEDULED = 1;
+  FLIGHT_STATUS_DEPARTED = 2;
+  FLIGHT_STATUS_CANCELLED = 3;
+  FLIGHT_STATUS_COMPLETED = 4;
+}
+
+// Статус резервации
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_ACTIVE = 1;
+  RESERVATION_STATUS_RELEASED = 2;
+  RESERVATION_STATUS_EXPIRED = 3;
+}
+
+// Рейс
+message Flight {
+  // Идентификатор рейса
+  string id = 1;
+  // Номер рейса
+  string flight_number = 2;
+  // Код авиакомпании
+  string airline_code = 3;
+  // IATA код вылета
+  string origin = 4;
+  // IATA код прилёта
+  string destination = 5;
+  // Время вылета
+  google.protobuf.Timestamp departure_time = 6;
+  // Время прилёта
+  google.protobuf.Timestamp arrival_time = 7;
+  // Всего мест
+  int32 total_seats = 8;
+  // Доступно мест
+  int32 available_seats = 9;
+  // Цена в минорных единицах
+  int64 price_minor = 10;
+  // Валюта ISO 4217
+  string currency = 11;
+  // Статус рейса
+  FlightStatus status = 12;
+}
+
+// Поиск рейсов
+message SearchFlightsRequest {
+  // IATA код вылета
+  string origin = 1;
+  // IATA код прилёта
+  string destination = 2;
+  // Дата вылета, опционально
+  optional google.protobuf.Timestamp date = 3;
+}
+
+// Результат поиска
+message SearchFlightsResponse {
+  // Найденные рейсы
+  repeated Flight flights = 1;
+}
+
+// Запрос рейса
+message GetFlightRequest {
+  // Идентификатор рейса
+  string id = 1;
+}
+
+// Ответ с рейсом
+message GetFlightResponse {
+  // Рейс
+  Flight flight = 1;
+}
+
+// Резервирование мест
+message ReserveSeatsRequest {
+  // Идентификатор рейса
+  string flight_id = 1;
+  // Количество мест
+  int32 seat_count = 2;
+  // Идентификатор бронирования
+  string booking_id = 3;
+}
+
+// Результат резервирования
+message ReserveSeatsResponse {
+  // Идентификатор резервации
+  string reservation_id = 1;
+  // Идентификатор бронирования
+  string booking_id = 2;
+  // Зарезервировано мест
+  int32 seat_count = 3;
+  // Остаток мест
+  int32 available_seats = 4;
+  // Статус резервации
+  ReservationStatus status = 5;
+}
+
+// Отмена резервирования
+message ReleaseReservationRequest {
+  // Идентификатор бронирования
+  string booking_id = 1;
+}
+
+// Результат отмены
+message ReleaseReservationResponse {
+  // Идентификатор резервации
+  string reservation_id = 1;
+  // Идентификатор бронирования
+  string booking_id = 2;
+  // Возвращено мест
+  int32 released_seats = 3;
+  // Статус резервации
+  ReservationStatus status = 4;
+}
+
+// Сервис рейсов
+service FlightService {
+  // Поиск рейсов
+  // Ошибка INVALID_ARGUMENT
+  rpc SearchFlights(SearchFlightsRequest) returns (SearchFlightsResponse);
+
+  // Получение рейса
+  // Ошибка NOT_FOUND
+  rpc GetFlight(GetFlightRequest) returns (GetFlightResponse);
+
+  // Резервирование мест
+  // Ошибка NOT_FOUND
+  // Ошибка RESOURCE_EXHAUSTED
+  // Ошибка FAILED_PRECONDITION
+  // Ошибка ALREADY_EXISTS
+  rpc ReserveSeats(ReserveSeatsRequest) returns (ReserveSeatsResponse);
+
+  // Отмена резервирования
+  // Ошибка NOT_FOUND
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+}
