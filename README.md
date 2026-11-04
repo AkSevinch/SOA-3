@@ -71,6 +71,7 @@ grpcurl -plaintext -H 'x-api-key: dev-flight-key' \
 - [gRPC контракт](docs/grpc-contract.md)
 - [Аутентификация gRPC](docs/auth.md)
 - [Retry вызовов Flight Service](docs/retry.md)
+- [Circuit Breaker](docs/circuit-breaker.md)
 - [Кеширование в Redis](docs/caching.md)
 - [Отказоустойчивый Redis](docs/redis-ha.md)
 - [ER-диаграмма](docs/er-diagram.md)

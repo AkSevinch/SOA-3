@@ -31,11 +31,14 @@ Booking Service повторяет gRPC-вызовы при временных �
 ```go
 grpc.WithChainUnaryInterceptor(
     auth.UnaryClientInterceptor(cfg.FlightAPIKey),
+    breaker.UnaryInterceptor(),
     booking.UnaryRetryInterceptor(booking.DefaultRetryConfig()),
 )
 ```
 
-Порядок важен: `auth` внешний и добавляет ключ один раз, `retry` внутренний и повторяет вызов с тем же контекстом.
+Порядок важен: `auth` внешний и добавляет ключ один раз, `breaker` считает одну
+логическую ошибку, `retry` внутренний и повторяет вызов с тем же контекстом.
+Подробнее про breaker в `docs/circuit-breaker.md`.
 
 ## Идемпотентность ReserveSeats
 

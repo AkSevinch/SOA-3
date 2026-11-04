@@ -40,12 +40,19 @@ func main() {
 	}
 	defer pool.Close()
 
+	breaker := booking.NewCircuitBreaker(booking.CircuitBreakerConfig{
+		FailureThreshold: cfg.CircuitBreakerFailureThreshold,
+		OpenTimeout:      cfg.CircuitBreakerOpenTimeout,
+		Window:           cfg.CircuitBreakerWindow,
+	})
+
 	dialCtx, dialCancel := context.WithTimeout(ctx, 30*time.Second)
 	defer dialCancel()
 	conn, err := grpc.DialContext(dialCtx, cfg.FlightGRPCAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
 			auth.UnaryClientInterceptor(cfg.FlightAPIKey),
+			breaker.UnaryInterceptor(),
 			booking.UnaryRetryInterceptor(booking.DefaultRetryConfig()),
 		),
 		grpc.WithBlock(),
